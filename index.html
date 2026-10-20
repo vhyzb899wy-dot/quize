@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🇳🇵 नेपाल ज्ञान खेल</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0e27;--card:#151b3d;--card2:#1e2649;
+  --geo:#3b82f6;--env:#10b981;--eco:#f59e0b;--mix:#8b5cf6;
+  --gold:#fbbf24;--green:#22c55e;--red:#ef4444;
+  --text:#f1f5f9;--muted:#94a3b8;
+}
+body{
+  font-family:'Noto Sans Devanagari','Mukta',system-ui,-apple-system,sans-serif;
+  background:radial-gradient(ellipse at top,#1a1f4a 0%,#0a0e27 70%);
+  color:var(--text);min-height:100vh;overflow-x:hidden;
+  display:flex;justify-content:center;align-items:center;padding:16px;
+}
+#app{width:100%;max-width:720px;position:relative;z-index:1}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%;opacity:.6;animation:twinkle 3s infinite ease-in-out}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:.9;transform:scale(1.2)}}
+.screen{display:none;animation:fadeIn .5s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.logo{font-size:64px;text-align:center;margin-bottom:8px;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+h1{font-size:clamp(28px,6vw,42px);text-align:center;font-weight:800;
+  background:linear-gradient(135deg,#fbbf24,#f472b6,#60a5fa);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;letter-spacing:-.5px}
+.subtitle{text-align:center;color:var(--muted);font-size:15px;margin-bottom:28px}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.cat-card{
+  background:var(--card);border:2px solid transparent;border-radius:18px;
+  padding:22px 16px;cursor:pointer;transition:all .25s;
+  text-align:center;position:relative;overflow:hidden;
+}
+.cat-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;pointer-events:none}
+.cat-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.cat-card:active{transform:translateY(-2px) scale(.98)}
+.cat-card .icon{font-size:36px;margin-bottom:8px;display:block}
+.cat-card .name{font-weight:700;font-size:16px;margin-bottom:4px}
+.cat-card .count{font-size:12px;color:var(--muted)}
+.cat-card[data-c="geo"]{border-color:var(--geo)}
+.cat-card[data-c="geo"]:hover{background:linear-gradient(135deg,#151b3d,#1e3a8a)}
+.cat-card[data-c="env"]{border-color:var(--env)}
+.cat-card[data-c="env"]:hover{background:linear-gradient(135deg,#151b3d,#065f46)}
+.cat-card[data-c="eco"]{border-color:var(--eco)}
+.cat-card[data-c="eco"]:hover{background:linear-gradient(135deg,#151b3d,#92400e)}
+.cat-card[data-c="mix"]{border-color:var(--mix);grid-column:1/-1}
+.cat-card[data-c="mix"]:hover{background:linear-gradient(135deg,#151b3d,#5b21b6)}
+.hi{text-align:center;color:var(--gold);font-size:14px;margin-top:12px;font-weight:600}
+
+/* GAME */
+.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+.stat{background:var(--card);padding:10px 16px;border-radius:12px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;border:1px solid var(--card2)}
+.stat .val{color:var(--gold)}
+.lives{color:var(--red);letter-spacing:2px}
+.progress-wrap{background:var(--card);height:10px;border-radius:6px;overflow:hidden;margin-bottom:20px;border:1px solid var(--card2)}
+.progress-bar{height:100%;background:linear-gradient(90deg,#fbbf24,#f472b6);transition:width .4s ease;border-radius:6px}
+.qcard{
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border-radius:22px;padding:26px 22px;margin-bottom:16px;
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 40px rgba(0,0,0,.3);
+  animation:qIn .4s ease;
+}
+@keyframes qIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.q-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:600}
+.q-cat{padding:4px 10px;border-radius:8px;background:rgba(59,130,246,.2);color:#93c5fd}
+.q-num{font-weight:700}
+.question{font-size:clamp(16px,2.5vw,20px);line-height:1.55;font-weight:600;margin-bottom:4px}
+.timer{height:4px;background:var(--card2);border-radius:2px;margin-top:14px;overflow:hidden}
+.timer-bar{height:100%;background:var(--green);transition:width 1s linear;border-radius:2px}
+.timer-bar.warn{background:var(--gold)}
+.timer-bar.danger{background:var(--red);animation:pulse 0.6s infinite}
+@keyframes pulse{50%{opacity:.5}}
+.options{display:grid;gap:10px}
+.opt{
+  background:var(--card);border:2px solid var(--card2);border-radius:14px;
+  padding:16px 18px;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:14px;font-size:15px;font-weight:500;
+  text-align:left;color:var(--text);width:100%;font-family:inherit;
+  animation:optIn .4s ease backwards;
+}
+@keyframes optIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.opt:nth-child(1){animation-delay:.05s}.opt:nth-child(2){animation-delay:.1s}
+.opt:nth-child(3){animation-delay:.15s}.opt:nth-child(4){animation-delay:.2s}
+.opt:hover:not(.disabled){border-color:var(--gold);background:var(--card2);transform:translateX(4px)}
+.opt .key{
+  width:32px;height:32px;flex-shrink:0;border-radius:8px;
+  background:var(--card2);display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;color:var(--muted);
+}
+.opt.correct{border-color:var(--green)!important;background:rgba(34,197,94,.15)!important;animation:correctPop .4s}
+.opt.correct .key{background:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red)!important;background:rgba(239,68,68,.15)!important;animation:shake .4s}
+.opt.wrong .key{background:var(--red);color:#fff}
+.opt.disabled{cursor:default;opacity:.7}
+.opt.correct .key::after{content:'✓';color:#fff}
+.opt.correct .key{font-size:0}
+.opt.wrong .key::after{content:'✕';color:#fff}
+.opt.wrong .key{font-size:0}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes correctPop{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+/* RESULT */
+.result-card{background:linear-gradient(135deg,var(--card),var(--card2));border-radius:22px;padding:32px 24px;text-align:center;border:1px solid rgba(255,255,255,.08)}
+.result-emoji{font-size:72px;margin-bottom:8px;animation:bounce 1s}
+.result-title{font-size:26px;font-weight:800;margin-bottom:16px;background:linear-gradient(135deg,#fbbf24,#f472b6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.score-display{font-size:48px;font-weight:900;color:var(--gold);margin:8px 0;text-shadow:0 0 30px rgba(251,191,36,.4)}
+.stat-row{display:flex;justify-content:center;gap:20px;margin:20px 0;flex-wrap:wrap}
+.stat-box{background:var(--card2);padding:12px 20px;border-radius:12px;min-width:100px}
+.stat-box .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.stat-box .num{font-size:22px;font-weight:800;color:var(--text)}
+.review{text-align:left;margin-top:20px;background:var(--card2);border-radius:14px;padding:16px;max-height:300px;overflow-y:auto}
+.review h3{font-size:14px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
+.rev-item{font-size:13px;padding:10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5}
+.rev-item:last-child{border:none}
+.rev-q{font-weight:600;margin-bottom:4px}
+.rev-a{color:var(--green);font-size:12px}
+.rev-y{color:var(--red);font-size:12px;text-decoration:line-through;opacity:.7}
+.btn{
+  display:block;width:100%;padding:16px;border-radius:14px;border:none;
+  font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;
+  transition:all .2s;margin-top:14px;
+}
+.btn-primary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a2e;box-shadow:0 6px 20px rgba(251,191,36,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(251,191,36,.5)}
+.btn-secondary{background:var(--card2);color:var(--text);border:1px solid rgba(255,255,255,.1)}
+.btn-secondary:hover{background:var(--card)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);
+  background:var(--green);color:#fff;padding:14px 28px;border-radius:12px;font-weight:700;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:100;transition:transform .3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.bad{background:var(--red)}
+@media(max-width:480px){
+  .cats{grid-template-columns:1fr}
+  .cat-card[data-c="mix"]{grid-column:auto}
+  .stat{padding:8px 12px;font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div id="app">
+
+  <!-- START -->
+  <div class="screen active" id="start">
+    <div class="logo">🇳🇵</div>
+    <h1>नेपाल ज्ञान खेल</h1>
+    <p class="subtitle">भूगोल • वातावरण • अर्थतन्त्र — १००+ प्रश्न</p>
+    <div class="cats">
+      <div class="cat-card" data-c="geo">
+        <span class="icon">🗺️</span>
+        <div class="name">नेपालको भूगोल</div>
+        <div class="count" id="c-geo"></div>
+      </div>
+      <div class="cat-card" data-c="env">
+        <span class="icon">🌿</span>
+        <div class="name">वातावरण</div>
+        <div class="count" id="c-env"></div>
+      </div>
+      <div class="cat-card" data-c="eco">
+        <span class="icon">💰</span>
+        <div class="name">अर्थतन्त्र</div>
+        <div class="count" id="c-eco"></div>
+      </div>
+      <div class="cat-card" data-c="mix">
+        <span class="icon">🎯</span>
+        <div class="name">मिश्रित मोड</div>
+        <div class="count" id="c-mix"></div>
+      </div>
+    </div>
+    <div class="hi" id="hiscore"></div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="game">
+    <div class="game-header">
+      <div class="stat">⭐ <span class="val" id="score">0</span></div>
+      <div class="stat">🔥 <span class="val" id="streak">0</span></div>
+      <div class="stat lives" id="lives">❤️❤️❤️</div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progress" style="width:0%"></div></div>
+    <div class="qcard">
+      <div class="q-meta">
+        <span class="q-cat" id="qcat">भूगोल</span>
+        <span class="q-num" id="qnum">१ / १०</span>
+      </div>
+      <div class="question" id="qtext"></div>
+      <div class="timer"><div class="timer-bar" id="timerbar" style="width:100%"></div></div>
+    </div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="result">
+    <div class="result-card">
+      <div class="result-emoji" id="remoji">🏆</div>
+      <div class="result-title" id="rtitle">उत्कृष्ट!</div>
+      <div class="score-display" id="rscore">0</div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="lbl">सही</div><div class="num" id="rcorrect">0</div></div>
+        <div class="stat-box"><div class="lbl">गलत</div><div class="num" id="rwrong">0</div></div>
+        <div class="stat-box"><div class="lbl">शुद्धता</div><div class="num" id="racc">0%</div></div>
+      </div>
+      <div class="review" id="review"></div>
+      <button class="btn btn-primary" onclick="restart()">🔄 फेरि खेल्नुहोस्</button>
+      <button class="btn btn-secondary" onclick="goHome()">🏠 मुख्य मेनु</button>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ QUESTION BANK ============
+const QB = {
+  geo: [
+    ["नेपालको क्षेत्रफल कति छ?", ["१,४७,१८१ वर्ग कि.मि.","१,४७,५१६ वर्ग कि.मि.","२,०४,९१७ वर्ग कि.मि.","१,४५,००० वर्ग कि.मि."],0],
+    ["नयाँ नक्सा अनुसार नेपालको क्षेत्रफल कति हो?", ["१,४७,१८१ वर्ग कि.मि.","१,४७,५१६ वर्ग कि.मि.","२,०४,९१७ वर्ग कि.मि.","१,४०,००० वर्ग कि.मि."],1],
+    ["सुगौली सन्धि हुनु पूर्व नेपालको क्षेत्रफल कति थियो?", ["१,४७,१८१ वर्ग कि.मि.","१,४७,५१६ वर्ग कि.मि.","२,०४,९१७ वर्ग कि.मि.","२,५०,००० वर्ग कि.मि."],2],
+    ["नेपालले विश्वको कति प्रतिशत भूभाग ओगटेको छ?", ["०.०३%","०.३%","२.८२%","१.५%"],0],
+    ["नेपालको स्थलक्षेत्र कति प्रतिशत छ?", ["९२.९४%","९०.००%","८५.५०%","९५.००%"],0],
+    ["नेपालको औसत लम्बाई कति हो?", ["८८५ कि.मि.","८०० कि.मि.","९०० कि.मि.","१,००० कि.मि."],0],
+    ["नेपालको औसत चौडाई कति हो?", ["१९३ कि.मि.","२४१ कि.मि.","१४५ कि.मि.","२०० कि.मि."],0],
+    ["भारतसँगको नेपालको सिमाना कति लामो छ?", ["१,६९० कि.मि.","१,२३६ कि.मि.","१,५०० कि.मि.","१,८०० कि.मि."],0],
+    ["चीनसँगको नेपालको सिमाना कति लामो छ?", ["१,६९० कि.मि.","१,२३६ कि.मि.","१,४०० कि.मि.","१,१०० कि.मि."],1],
+    ["नेपालको पूर्वी अन्तिम बिन्दु कुन हो?", ["ताप्लेजुङको लेलेप","कञ्चनपुरको दोधारा","हम्लाको चाड्ला भञ्ज्याङ","झापाको लोदावारी"],0],
+    ["नेपालको पश्चिमी अन्तिम बिन्दु कुन हो?", ["ताप्लेजुङको लेलेप","कञ्चनपुरको दोधारा","हम्लाको चाड्ला भञ्ज्याङ","झापाको लोदावारी"],1],
+    ["नेपालको उत्तरी अन्तिम बिन्दु कुन हो?", ["ताप्लेजुङको लेलेप","कञ्चनपुरको दोधारा","हम्लाको चाड्ला भञ्ज्याङ","झापाको लोदावारी"],2],
+    ["नेपालको दक्षिणी अन्तिम बिन्दु कुन हो?", ["ताप्लेजुङको लेलेप","कञ्चनपुरको दोधारा","हम्लाको चाड्ला भञ्ज्याङ","झापाको लोदावारी"],3],
+    ["सिमाना नजोडिएको नेपालबाट सबैभन्दा नजिकको राष्ट्र कुन हो?", ["बंगलादेश","भुटान","म्यानमार","श्रीलंका"],0],
+    ["नेपालबाट सबैभन्दा नजिक पर्ने राजधानी शहर कुन हो?", ["दिल्ली","थिम्पु","ढाका","ल्हासा"],1],
+    ["नेपालसँग मिल्दोजुल्दो आकार भएको देश कुन हो?", ["पोर्तुगल","स्पेन","इटाली","ग्रिस"],0],
+    ["सबैभन्दा बढी जिल्लासँग सिमाना जोडिएको जिल्ला कुन हो?", ["सिन्धुली","मकवानपुर","चितवन","काठमाडौं"],0],
+    ["सबैभन्दा उचाइमा रहेको सदरमुकाम कुन हो?", ["सिमिकोट","जलेश्वर","दमौली","सल्लेरी"],0],
+    ["सबैभन्दा होचो स्थानमा रहेको सदरमुकाम कुन हो?", ["जलेश्वर","सिमिकोट","विराटनगर","नेपालगञ्ज"],0],
+    ["नेपालको प्रमाणिक समय कुन हिमाललाई काटेर जाने देशान्तरमा आधारित छ?", ["गौरीशंकर हिमाल","सगरमाथा","कञ्चनजङ्गा","अन्नपूर्ण"],0],
+    ["नेपालको प्रमाणिक समय GMT भन्दा कति छिटो छ?", ["५ घण्टा ४५ मिनेट","५ घण्टा ३० मिनेट","६ घण्टा","५ घण्टा"],0],
+    ["क्षेत्रफलको हिसाबमा सबैभन्दा ठूलो जिल्ला कुन हो?", ["डोल्पा","हुम्ला","ताप्लेजुङ","गोरखा"],0],
+    ["क्षेत्रफलको हिसाबमा सबैभन्दा सानो जिल्ला कुन हो?", ["भक्तपुर","ललितपुर","काठमाडौं","पर्वत"],0],
+    ["हिमाल पारीका जिल्ला कुन हुन्?", ["मनाङ र मुस्ताङ","डोल्पा र हुम्ला","सोलुखुम्बु र संखुवासभा","रसुवा र सिन्धुपाल्चोक"],0],
+    ["नेपालको मरुभूमि भनेर कुन क्षेत्रलाई चिनिन्छ?", ["मुस्ताङ","मनाङ","डोल्पा","हुम्ला"],0],
+    ["साइकल सिटी भनेर कुन सहरलाई चिनिन्छ?", ["धरान","विराटनगर","पोखरा","बुटवल"],0],
+    ["नेपालको प्रवेशद्वार भनेर कुन ठाउँलाई चिनिन्छ?", ["वीरगञ्ज","भैरहवा","काकडभिट्टा","नेपालगञ्ज"],0],
+    ["नेपालको सबैभन्दा होचो हिमरेखा कुन हो?", ["रुपिनाला, गोरखा (४५०० मि.)","गौरीशंकर","सगरमाथा","कञ्चनजङ्गा"],0],
+    ["सगरमाथाको उचाई कति हो?", ["८,८४८.८६ मि.","८,५८६ मि.","८,५१६ मि.","८,१६७ मि."],0],
+    ["कञ्चनजङ्गाको उचाई कति हो?", ["८,८४८.८६ मि.","८,५८६ मि.","८,५१६ मि.","८,१६७ मि."],1],
+    ["'Killer Mountain' भनेर कुन हिमाललाई चिनिन्छ?", ["मनास्लु","मकालु","धौलागिरी","अन्नपूर्ण"],0],
+    ["'कुमारी हिमाल' भनेर कुन हिमाललाई चिनिन्छ?", ["माछापुच्छ्रे","पुमोरी","अन्नपूर्ण","मनास्लु"],0],
+    ["'जेठो हिमाल' भनेर कुन हिमाललाई चिनिन्छ?", ["अन्नपूर्ण","सगरमाथा","कञ्चनजङ्गा","मनास्लु"],0],
+    ["नेपालको कान्छो राष्ट्रिय निकुञ्ज कुन हो?", ["छायाँनाथ","बर्दिया","शुक्लाफाँटा","पर्सा"],0],
+    ["नेपालमा प्रदेशको संख्या कति छ?", ["७","५","१४","६"],0],
+    ["नेपालमा स्थानीय तहको संख्या कति छ?", ["७५३","७७","१६५","६७४३"],0],
+    ["नेपालमा महानगरपालिकाको संख्या कति छ?", ["६","११","२७६","४६०"],0],
+    ["सबैभन्दा बढी स्थानीय तह भएको जिल्ला कुन हो?", ["सर्लाही","धादिङ","रौतहट","मोरङ"],0],
+    ["सबैभन्दा कम स्थानीय तह भएको जिल्ला कुन हो?", ["रुकुम पूर्व","मनाङ","मुस्ताङ","डोल्पा"],0],
+    ["तराई क्षेत्रले नेपालको कति प्रतिशत भूभाग ओगटेको छ?", ["१७%","५७.५%","२५.२%","५०%"],0],
+    ["पहाड क्षेत्रले नेपालको कति प्रतिशत भूभाग ओगटेको छ?", ["१७%","५७.५%","२५.२%","३०%"],1],
+    ["हिमाल क्षेत्रले नेपालको कति प्रतिशत भूभाग ओगटेको छ?", ["१७%","५७.५%","२५.२%","१०%"],2],
+    ["भित्री मधेशका जिल्ला कति वटा छन्?", ["७","५","८","६"],0],
+    ["चुरे पर्वतको उचाई कति सम्म फैलिएको छ?", ["१८७२ मि. सम्म","३००० मि. सम्म","१५०० मि. सम्म","२५०० मि. सम्म"],0]
+  ],
+  env: [
+    ["जैविक विविधताका पिता कसलाई भनिन्छ?", ["E.O. Wilson","चार्ल्स डार्विन","अरस्तु","लिनियस"],0],
+    ["विश्व जैविक विविधता दिवस कहिले मनाइन्छ?", ["मे २२","जुन ५","अप्रिल २२","जुलाई २९"],0],
+    ["पारिस्थितिक पद्धति शब्द सर्वप्रथम कसले प्रयोग गरे?", ["A.G. Tansley","यूजीन ओडम","अर्नस्ट हेकल","चार्ल्स डार्विन"],0],
+    ["आधुनिक पारिस्थितिक पद्धतिका पिता कसलाई भनिन्छ?", ["यूजीन ओडम","A.G. Tansley","अर्नस्ट हेकल","E.O. Wilson"],0],
+    ["विश्व वातावरण दिवस कहिले मनाइन्छ?", ["जुन ५","मे २२","अप्रिल २२","सेप्टेम्बर १६"],0],
+    ["पहिलो विश्व वातावरण सम्मेलन कहाँ भएको थियो?", ["स्टकहोम, स्वीडेन (१९७२)","रियो, ब्राजिल","क्योटो, जापान","पेरिस, फ्रान्स"],0],
+    ["ओजोन तहको क्षयीकरण नाप्ने एकाई कुन हो?", ["Dobson unit","TOMS","Watt","Decibel"],0],
+    ["ओजोन तह विनाशको प्रमुख कारण कुन हो?", ["CFC (क्लोरोफ्लोरोकार्बन)","CO₂","मिथेन","नाइट्रोजन"],0],
+    ["चिपको आन्दोलनको नेतृत्व कसले गरेका थिए?", ["सुन्दरलाल बहुगुणा","वाङ्गरी माथाई","महेश चन्द्र मेहता","कृष्ण कुमार पाण्डे"],0],
+    ["क्योटो प्रोटोकल कहिले अनुमोदन गरिएको थियो?", ["१९९७","१९९२","२०१५","२००५"],0],
+    ["IUCN को स्थापना कहिले भएको थियो?", ["१९४८","१९६१","१९७३","१९८३"],0],
+    ["UNEP को प्रधान कार्यालय कहाँ छ?", ["नैरोबी, केन्या","ग्ल्याण्ड, स्वीट्जरल्याण्ड","पेरिस, फ्रान्स","न्यूयोर्क, अमेरिका"],0],
+    ["WWF को स्थापना कहिले भएको थियो?", ["१९६१","१९४८","१९७३","१९८७"],0],
+    ["CITES सन्धि कहिले भएको थियो?", ["१९७३","१९६१","१९८७","१९९२"],0],
+    ["ICIMOD को प्रधान कार्यालय कहाँ छ?", ["ललितपुर, नेपाल","नैरोबी, केन्या","ग्ल्याण्ड, स्वीट्जरल्याण्ड","पेरिस, फ्रान्स"],0],
+    ["Goldman पुरस्कारलाई के भनेर चिनिन्छ?", ["वातावरण क्षेत्रको नोबेल पुरस्कार","वातावरण क्षेत्रको सबैभन्दा ठूलो पुरस्कार","एसियाली नोबेल","ग्रीन अवार्ड"],0],
+    ["दिगो विकास शब्दको प्रयोग गर्ने प्रथम व्यक्ति को हुन्?", ["बाबीरा वाडी","ग्रो हालेंम बूटल्याण्ड","E.O. Wilson","यूजीन ओडम"],0],
+    ["बुटल्याण्ड आयोगको गठन कहिले भएको थियो?", ["१९८३","१९८७","१९९२","१९७२"],0],
+    ["पृथ्वी शिखर सम्मेलन कहाँ सम्पन्न भएको थियो?", ["रियो दि जेनेरियो, ब्राजिल (१९९२)","स्टकहोम, स्वीडेन","क्योटो, जापान","पेरिस, फ्रान्स"],0],
+    ["दिगो विकासका लक्ष्य (SDG) कति वटा छन्?", ["१७","१५","२०","१०"],0],
+    ["पेरिस सम्झौता कहिले भएको थियो?", ["२०१५","१९९७","२००५","२००९"],0],
+    ["नेपालको कुल जनसंख्या (२०७८ जनगणना) कति छ?", ["२,९१,६४,५७८","२,६४,९४,५०४","३,००,००,०००","२,५०,००,०००"],0],
+    ["नेपालको जनसंख्या वृद्धिदर कति छ (२०७८)?", ["०.९२%","१.३५%","२.६२%","१.५०%"],0],
+    ["सबैभन्दा बढी जनघनत्व भएको जिल्ला कुन हो?", ["काठमाडौं","भक्तपुर","ललितपुर","मोरङ"],0],
+    ["सबैभन्दा कम जनघनत्व भएको जिल्ला कुन हो?", ["मनाङ","मुस्ताङ","डोल्पा","हुम्ला"],0],
+    ["नेपालको साक्षरता दर कति छ?", ["७६.३%","६५.५%","८३.६%","९०%"],0],
+    ["क्षेत्रफलको आधारमा सबैभन्दा ठूलो राष्ट्रिय निकुञ्ज कुन हो?", ["शे-फोक्सुण्डो","चितवन","बर्दिया","सगरमाथा"],0],
+    ["क्षेत्रफलको आधारमा सबैभन्दा सानो राष्ट्रिय निकुञ्ज कुन हो?", ["रारा","शे-फोक्सुण्डो","चितवन","बाँके"],0],
+    ["नेपालको पहिलो राष्ट्रिय निकुञ्ज कुन हो?", ["चितवन","सगरमाथा","बर्दिया","लाङटाङ"],0],
+    ["सबैभन्दा ठूलो संरक्षण क्षेत्र कुन हो?", ["अन्नपूर्ण संरक्षण क्षेत्र","कञ्चनजंगा","मनास्लु","गौरीशंकर"],0],
+    ["सबैभन्दा सानो संरक्षण क्षेत्र कुन हो?", ["कृष्णसार संरक्षण क्षेत्र","अन्नपूर्ण","मनास्लु","अपिनाम्पा"],0],
+    ["विश्व बाघ दिवस कहिले मनाइन्छ?", ["जुलाई २९","जुन ५","मे २२","अक्टोबर ३"],0],
+    ["नेपालमा मात्र पाइने चरा कुन हो?", ["काडे भ्याकुर (Spiny Babbler)","डाँफे","मुनाल","सारस"],0],
+    ["नेपालमा मात्र पाइने पुतली कुन हो?", ["पोन्टिया शेर्पा","सिक्किम ब्यान्डेड","अपोलो","मोनार्क"],0],
+    ["रारा ताल कुन जिल्लामा पर्छ?", ["मुगु","डोल्पा","मनाङ","कास्की"],0],
+    ["तिलिचो ताल कुन जिल्लामा पर्छ?", ["मनाङ","मुगु","डोल्पा","कास्की"],0],
+    ["से-फोक्सुण्डो ताल कुन जिल्लामा पर्छ?", ["डोल्पा","मुगु","मनाङ","कास्की"],0],
+    ["नेपालको सबैभन्दा ठूलो र गहिरो ताल कुन हो?", ["रारा ताल","फेवा ताल","तिलिचो ताल","से-फोक्सुण्डो"],0],
+    ["विश्वको सबैभन्दा अग्लो स्थानमा रहेको ताल कुन हो?", ["तिलिचो ताल","रारा ताल","फेवा ताल","गोसाईकुण्ड"],0]
+  ],
+  eco: [
+    ["नेपालले कुन प्रकारको अर्थ व्यवस्था अवलम्बन गरेको छ?", ["मिश्रित","पूँजीवादी","समाजवादी","साम्यवादी"],0],
+    ["नेपालमा बजेटको सुरुवात कहिले भएको थियो?", ["२००८ माघ २१","२००२ असोज १","२०१३ वैशाख १४","२०१६ फागुन ७"],0],
+    ["नेपाल राष्ट्र बैंकको स्थापना कहिले भएको थियो?", ["२०१३ वैशाख १४","२००८ माघ २१","२००२ असोज १","२०५० जेठ २५"],0],
+    ["नेपालको मानव विकास सूचकाङ्क (HDI 2025) कति छ?", ["०.६२२","०.५५०","०.७००","०.८००"],0],
+    ["नेपालमा योजनाबद्ध विकासको सुरुवात कहिले भएको थियो?", ["२०१३","२००८","२०१८","२०२५"],0],
+    ["नेपालमा हालसम्म कति योजना कार्यान्वयन भएका छन्?", ["१६","११","१५","१०"],0],
+    ["प्रथम पञ्चवर्षीय योजना कहिले सुरु भएको थियो?", ["२०१३-२०१८","२०१९-२०२२","२०२२-२०२७","२०१८-२०२३"],0],
+    ["Plan Holiday भनेर कुन वर्षहरूलाई चिनिन्छ?", ["२०१८, २०४७, २०४८","२०१३, २०१४","२०२०, २०२१","२०४०, २०४१"],0],
+    ["राष्ट्रिय योजना आयोगको अध्यक्ष को हुन्?", ["प्रधानमन्त्री","अर्थमन्त्री","राष्ट्रपति","योजना मन्त्री"],0],
+    ["कृषि क्षेत्रले नेपालको GDP मा कति योगदान दिन्छ?", ["२५.१६%","५०%","१०%","४०%"],0],
+    ["नेपालमा चिया खेतीको सुरुवात कहिले भएको थियो?", ["१९२०","१९५०","१९००","१९४०"],0],
+    ["नेपालको पहिलो उद्योग कुन हो?", ["विराटनगर जुट मिल","नेपाल बैंक","बुधकरण टी स्टेट","हेटौंडा सिमेन्ट"],0],
+    ["नेपाल बैंकको स्थापना कहिले भएको थियो?", ["१९९४ कार्तिक ३०","१९९३","२०१३","१९८०"],0],
+    ["नेपाल WTO को सदस्य कहिले बन्यो?", ["२००४ अप्रिल २३","१९९५ जनवरी १","२००७","२०१०"],0],
+    ["Visit Nepal 2020 को नारा के थियो?", ["Lifetime Experience","For a living planet","Beat Plastic Pollution","Gift to Earth"],0],
+    ["सगरमाथा सर्वप्रथम कहिले आरोहण गरिएको थियो?", ["१९५३ मे २९","१९५० जुन ५","१९६०","१९७०"],0],
+    ["विश्व पर्यटन दिवस कहिले मनाइन्छ?", ["सेप्टेम्बर २७","जुन ५","मे २२","अक्टोबर ९"],0],
+    ["नेपालको सबैभन्दा लामो राजमार्ग कुन हो?", ["महेन्द्र राजमार्ग (१०२७.६७ कि.मि.)","पृथ्वी राजमार्ग","अरनिको राजमार्ग","सिद्धार्थ राजमार्ग"],0],
+    ["पृथ्वी राजमार्गले कुन ठाउँ जोड्छ?", ["पोखरा-नौबिसे","काठमाडौं-वीरगञ्ज","काठमाडौं-कोदारी","धुलिखेल-बर्दिबास"],0],
+    ["मध्य पहाडी लोकमार्गको लम्बाई कति छ?", ["१७६५ कि.मि.","१०२७ कि.मि.","१८९ कि.मि.","४५० कि.मि."],0],
+    ["नेपालमा रेल सेवाको सुरुवात कहिले भएको थियो?", ["१९९३","१९५०","२०००","१९८०"],0],
+    ["नेपालको पहिलो केवलकार कुन हो?", ["मनकामना केवलकार","चन्द्रागिरी केवलकार","सराङकोट केवलकार","कुरिनटार केवलकार"],0],
+    ["नेपालको सबैभन्दा अग्लो स्थानमा रहेको विमानस्थल कुन हो?", ["स्याङबोचे","विराटनगर","काठमाडौं","पोखरा"],0],
+    ["नेपालको पहिलो कलेज कुन हो?", ["त्रि-चन्द्र कलेज","त्रिभुवन विश्वविद्यालय","दरबार हाइस्कुल","अमृत साइन्स"],0],
+    ["नेपालको पहिलो विश्वविद्यालय कुन हो?", ["त्रिभुवन विश्वविद्यालय","काठमाडौं विश्वविद्यालय","गण्डकी विश्वविद्यालय","संस्कृत विश्वविद्यालय"],0],
+    ["रेडियो नेपालको स्थापना कहिले भएको थियो?", ["२००७ चैत २०","२००८","१९५८","२०१७"],0],
+    ["नेपाल टेलिभिजनको स्थापना कहिले भएको थियो?", ["२०४१ माघ १७","२००७ चैत २०","१९५८","२०५०"],0],
+    ["गोरखापत्रको सुरुवात कहिले भएको थियो?", ["१९५८ वैशाख २४","२००७","१९४३","२०१७"],0],
+    ["नेपालमा इन्टरनेटको सुरुवात कहिले भएको थियो?", ["सन् १९९४","१९८०","२०००","२००५"],0],
+    ["नेपालको पहिलो जलविद्युत आयोजना कुन हो?", ["फिपिङ","माथिल्लो तामाकोशी","कुलेखानी","खिम्ती"],0],
+    ["नेपालको सबैभन्दा ठूलो जलविद्युत आयोजना कुन हो?", ["माथिल्लो तामाकोशी (४५६ मे.वा.)","कालीगण्डकी","कुलेखानी","खिम्ती"],0],
+    ["निजी क्षेत्रबाट स्थापित पहिलो जलविद्युत आयोजना कुन हो?", ["खिम्ती","फिपिङ","माथिल्लो तामाकोशी","भोटेकोशी"],0],
+    ["नेपालको पहिलो निजी विश्वविद्यालय कुन हो?", ["काठमाडौं विश्वविद्यालय","त्रिभुवन विश्वविद्यालय","गण्डकी विश्वविद्यालय","पोखरा विश्वविद्यालय"],0],
+    ["नेपालमा कृषि गणनाको सुरुवात कहिले भएको थियो?", ["२०१८","२०२०","१९५०","२०५०"],0],
+    ["नेपाल जिन बैंकको स्थापना कहिले भएको थियो?", ["२०६७ असोज २१","२०५०","२०१०","२०७०"],0],
+    ["नेपालको पहिलो टी स्टेट कुन हो?", ["बुधकरण टी स्टेट (२०१६)","इलाम टी स्टेट","झापा टी स्टेट","धनकुटा टी स्टेट"],0],
+    ["विश्वमा बजेटको सुरुवात कहिले भएको थियो?", ["सन् १७३३ (बेलायत)","सन् १८००","सन् १५००","सन् १९००"],0],
+    ["नेपालमा कागजी नोटको सुरुवात कहिले भएको थियो?", ["२००२ असोज १","१९५०","२०१३","१९००"],0],
+    ["नेपाल राष्ट्र बैंकबाट सर्वप्रथम नोट कहिले निष्कासन भएको थियो?", ["२०१६ फागुन ७","२००२ असोज १","२०१३","१९५०"],0]
+  ]
+};
+
+// ============ GAME STATE ============
+let state = { questions:[], idx:0, score:0, streak:0, maxStreak:0, lives:3, correct:0, wrong:0, category:'', history:[], timer:null, timeLeft:25, answered:false };
+
+// ============ INIT ============
+document.getElementById('c-geo').textContent = QB.geo.length + ' प्रश्न';
+document.getElementById('c-env').textContent = QB.env.length + ' प्रश्न';
+document.getElementById('c-eco').textContent = QB.eco.length + ' प्रश्न';
+document.getElementById('c-mix').textContent = (QB.geo.length+QB.env.length+QB.eco.length) + ' प्रश्न';
+const hs = localStorage.getItem('nepalQuizHi') || 0;
+document.getElementById('hiscore').textContent = hs > 0 ? '🏆 उच्च स्कोर: ' + hs : '';
+
+// Stars
+(function(){
+  const s = document.getElementById('stars');
+  for(let i=0;i<50;i++){
+    const st = document.createElement('div');
+    st.className = 'star';
+    const sz = Math.random()*3+1;
+    st.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s`;
+    s.appendChild(st);
+  }
+})();
+
+// Sound (Web Audio API - offline)
+let audioCtx;
+function sound(type){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    if(type==='correct'){ o.frequency.value=880; o.type='sine'; g.gain.setValueAtTime(0.15,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.3); o.start(); o.stop(audioCtx.currentTime+0.3);}
+    else if(type==='wrong'){ o.frequency.value=200; o.type='sawtooth'; g.gain.setValueAtTime(0.1,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.4); o.start(); o.stop(audioCtx.currentTime+0.4);}
+    else if(type==='tick'){ o.frequency.value=1200; o.type='square'; g.gain.setValueAtTime(0.03,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.05); o.start(); o.stop(audioCtx.currentTime+0.05);}
+    else if(type==='win'){ [523,659,784,1047].forEach((f,i)=>{const oo=audioCtx.createOscillator();const gg=audioCtx.createGain();oo.connect(gg);gg.connect(audioCtx.destination);oo.frequency.value=f;oo.type='sine';gg.gain.setValueAtTime(0.1,audioCtx.currentTime+i*0.12);gg.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+i*0.12+0.3);oo.start(audioCtx.currentTime+i*0.12);oo.stop(audioCtx.currentTime+i*0.12+0.3);}); }
+  }catch(e){}
+}
+
+// Toast
+function toast(msg, bad){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (bad?' bad':'');
+  setTimeout(()=>t.className='toast'+(bad?' bad':''), 1200);
+}
+
+// ============ NAVIGATION ============
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function startGame(cat){
+  let pool;
+  if(cat==='mix'){
+    pool = [...QB.geo.map(q=>({q,c:'geo'})), ...QB.env.map(q=>({q,c:'env'})), ...QB.eco.map(q=>({q,c:'eco'}))];
+    shuffle(pool);
+    pool = pool.slice(0, 20); // 20 questions for mixed
+  } else {
+    pool = shuffle([...QB[cat].map(q=>({q,c:cat}))]).slice(0, 15);
+  }
+  state = { questions: pool, idx:0, score:0, streak:0, maxStreak:0, lives:3, correct:0, wrong:0, category:cat, history:[], timer:null, timeLeft:25, answered:false };
+  show('game');
+  loadQuestion();
+}
+
+function loadQuestion(){
+  state.answered = false;
+  if(state.idx >= state.questions.length || state.lives <= 0){ endGame(); return; }
+  const q = state.questions[state.idx];
+  const catNames = {geo:'भूगोल', env:'वातावरण', eco:'अर्थतन्त्र'};
+  const catColors = {geo:'--geo', env:'--env', eco:'--eco'};
+  const catEl = document.getElementById('qcat');
+  catEl.textContent = catNames[q.c] || 'मिश्रित';
+  catEl.style.background = `rgba(59,130,246,.2)`;
+  if(q.c==='env') catEl.style.background='rgba(16,185,129,.2)';
+  if(q.c==='eco') catEl.style.background='rgba(245,158,11,.2)';
+  document.getElementById('qnum').textContent = (state.idx+1) + ' / ' + state.questions.length;
+  document.getElementById('qtext').textContent = q.q[0];
+  document.getElementById('score').textContent = state.score;
+  document.getElementById('streak').textContent = state.streak;
+  document.getElementById('lives').textContent = '❤️'.repeat(state.lives) + '🖤'.repeat(3-state.lives);
+  document.getElementById('progress').style.width = (state.idx/state.questions.length*100)+'%';
+  
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  const keys = ['A','B','C','D'];
+  q.q[1].forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="key">${keys[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => answer(i);
+    opts.appendChild(btn);
+  });
+
+  // Timer
+  state.timeLeft = 25;
+  state.answered = false;
+  updateTimerBar();
+  clearInterval(state.timer);
+  state.timer = setInterval(() => {
+    if(state.answered) return;
+    state.timeLeft -= 1;
+    updateTimerBar();
+    if(state.timeLeft <= 5 && state.timeLeft > 0) sound('tick');
+    if(state.timeLeft <= 0){ clearInterval(state.timer); timeout(); }
+  }, 1000);
+}
+
+function updateTimerBar(){
+  const bar = document.getElementById('timerbar');
+  const pct = (state.timeLeft/25)*100;
+  bar.style.width = pct+'%';
+  bar.className = 'timer-bar';
+  if(pct < 40) bar.classList.add('warn');
+  if(pct < 20) bar.classList.add('danger');
+}
+
+function answer(idx){
+  if(state.answered) return;
+  state.answered = true;
+  clearInterval(state.timer);
+  const q = state.questions[state.idx];
+  const correct = q.q[2];
+  const btns = document.querySelectorAll('.opt');
+  btns.forEach(b => b.classList.add('disabled'));
+  
+  if(idx === correct){
+    btns[idx].classList.add('correct');
+    sound('correct');
+    state.correct++;
+    state.streak++;
+    if(state.streak > state.maxStreak) state.maxStreak = state.streak;
+    const timeBonus = Math.max(0, state.timeLeft) * 4;
+    const streakBonus = Math.min(state.streak, 5) * 20;
+    const pts = 100 + timeBonus + streakBonus;
+    state.score += pts;
+    state.history.push({q: q.q[0], correct: q.q[1][correct], picked: q.q[1][idx], ok: true});
+    toast('+'+pts+' अंक!' + (state.streak>=3?' 🔥 स्ट्रिक!':''));
+    document.getElementById('score').textContent = state.score;
+    document.getElementById('streak').textContent = state.streak;
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[correct].classList.add('correct');
+    sound('wrong');
+    state.wrong++;
+    state.streak = 0;
+    state.lives--;
+    state.history.push({q: q.q[0], correct: q.q[1][correct], picked: q.q[1][idx], ok: false});
+    toast('गलत! ❤️ -1', true);
+    document.getElementById('streak').textContent = 0;
+    document.getElementById('lives').textContent = '❤️'.repeat(state.lives) + '🖤'.repeat(3-state.lives);
+  }
+  
+  setTimeout(() => {
+    state.idx++;
+    if(state.lives <= 0) endGame();
+    else loadQuestion();
+  }, 1400);
+}
+
+function timeout(){
+  if(state.answered) return;
+  state.answered = true;
+  const q = state.questions[state.idx];
+  const correct = q.q[2];
+  const btns = document.querySelectorAll('.opt');
+  btns.forEach(b => b.classList.add('disabled'));
+  btns[correct].classList.add('correct');
+  sound('wrong');
+  state.wrong++;
+  state.streak = 0;
+  state.lives--;
+  state.history.push({q: q.q[0], correct: q.q[1][correct], picked: '(समय सकियो)', ok: false});
+  toast('समय सकियो! ⏰', true);
+  document.getElementById('streak').textContent = 0;
+  document.getElementById('lives').textContent = '❤️'.repeat(state.lives) + '🖤'.repeat(3-state.lives);
+  setTimeout(() => {
+    state.idx++;
+    if(state.lives <= 0) endGame();
+    else loadQuestion();
+  }, 1400);
+}
+
+function endGame(){
+  clearInterval(state.timer);
+  state.answered = true;
+  const total = state.correct + state.wrong;
+  const acc = total > 0 ? Math.round(state.correct/total*100) : 0;
+  document.getElementById('rscore').textContent = state.score;
+  document.getElementById('rcorrect').textContent = state.correct;
+  document.getElementById('rwrong').textContent = state.wrong;
+  document.getElementById('racc').textContent = acc + '%';
+  
+  let emoji = '😢', title = 'अझै प्रयास गर्नुहोस्!';
+  if(acc >= 90){ emoji='🏆'; title='अद्भुत! तपाईं तयार हुनुहुन्छ!'; sound('win'); }
+  else if(acc >= 75){ emoji='🎉'; title='उत्कृष्ट प्रदर्शन!'; sound('win'); }
+  else if(acc >= 60){ emoji='👍'; title='राम्रो! अझै सुधार्न सकिन्छ'; }
+  else if(acc >= 40){ emoji='📚'; title='अभ्यास आवश्यक छ'; }
+  document.getElementById('remoji').textContent = emoji;
+  document.getElementById('rtitle').textContent = title;
+  
+  // Hi score
+  const prev = parseInt(localStorage.getItem('nepalQuizHi')||0);
+  if(state.score > prev){
+    localStorage.setItem('nepalQuizHi', state.score);
+    document.getElementById('hiscore').textContent = '🏆 उच्च स्कोर: ' + state.score;
+  }
+  
+  // Review
+  const rev = document.getElementById('review');
+  if(state.history.length > 0){
+    rev.innerHTML = '<h3>📋 समीक्षा</h3>' + state.history.map(h => 
+      `<div class="rev-item">
+        <div class="rev-q">${h.ok?'✅':'❌'} ${h.q}</div>
+        ${!h.ok ? `<div class="rev-y">तपाईंको: ${h.picked}</div>` : ''}
+        <div class="rev-a">सही: ${h.correct}</div>
+      </div>`
+    ).join('');
+  } else { rev.innerHTML = ''; }
+  show('result');
+}
+
+function restart(){ startGame(state.category || 'mix'); }
+function goHome(){ show('start'); }
+
+// Event listeners
+document.querySelectorAll('.cat-card').forEach(c => {
+  c.onclick = () => { sound('tick'); startGame(c.dataset.c); };
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if(!document.getElementById('game').classList.contains('active')) return;
+  if(state.answered) return;
+  const k = e.key.toUpperCase();
+  const map = {'A':0,'B':1,'C':2,'D':3,'1':0,'2':1,'3':2,'4':3};
+  if(k in map) answer(map[k]);
+});
+</script>
+</body>
+</html>
